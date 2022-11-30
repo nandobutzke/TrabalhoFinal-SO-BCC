@@ -17,9 +17,14 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class Interface {
 
@@ -117,24 +122,93 @@ public class Interface {
 		btnPanelFinalizarTarefa.setBounds(723, 531, 219, 23);
 		frame.getContentPane().add(btnPanelFinalizarTarefa);
 		
+		JComboBox comboBoxFields = new JComboBox();
+		comboBoxFields.setModel(new DefaultComboBoxModel(new String[] {"PID", "Usuário", "Comando", "Linha"}));
+		comboBoxFields.setBounds(299, 33, 152, 22);
+		frame.getContentPane().add(comboBoxFields);
+		
 		textField = new JTextField();
-		textField.setBounds(430, 12, 192, 20);
+		textField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				String fieldSelected = comboBoxFields.getSelectedItem().toString().trim();
+				
+				String arg = textField.getText();
+				
+				if (!"".equals(arg) && !arg.isEmpty()) {
+					if (fieldSelected.equals("PID") && isLong(arg)) {
+						long pid = Long.parseLong(arg);
+						
+						ProcessHandle.allProcesses().forEach(proc -> {
+							if (proc.pid() == pid) {
+								table.setModel(
+									new DefaultTableModel(
+										new Object[][] {{proc.pid(), proc.info().user().orElse(""), proc.info().commandLine().orElse(""), proc.info().command().orElse("")}},
+										new String[] {"PID", "Usu\u00E1rio", "Comando", "Linha"}
+									)
+								);
+							}
+						});
+					} else if (fieldSelected.equals("Usuário")) {
+						ProcessHandle.allProcesses().forEach(proc -> {
+							if (proc.info().user().orElse("").contains(arg)) {
+								table.setModel(
+									new DefaultTableModel(
+										new Object[][] {{proc.pid(), proc.info().user().orElse(""), proc.info().commandLine().orElse(""), proc.info().command().orElse("")}},
+										new String[] {"PID", "Usu\u00E1rio", "Comando", "Linha"}
+									)
+								);
+							}
+						});
+					} else if (fieldSelected.equals("Comando")) {
+						ProcessHandle.allProcesses().forEach(proc -> {
+							if (proc.info().commandLine().orElse("").contains(arg)) {
+								table.setModel(
+									new DefaultTableModel(
+										new Object[][] {{proc.pid(), proc.info().user().orElse(""), proc.info().commandLine().orElse(""), proc.info().command().orElse("")}},
+										new String[] {"PID", "Usu\u00E1rio", "Comando", "Linha"}
+									)
+								);
+							}
+						});
+					} else if (fieldSelected.equals("Linha")) {
+						ProcessHandle.allProcesses().forEach(proc -> {
+							if (proc.info().command().orElse("").contains(arg)) {
+								table.setModel(
+									new DefaultTableModel(
+										new Object[][] {{proc.pid(), proc.info().user().orElse(""), proc.info().commandLine().orElse(""), proc.info().command().orElse("")}},
+										new String[] {"PID", "Usu\u00E1rio", "Comando", "Linha"}
+									)
+								);
+							}
+						});
+					}
+				} else {
+					getProcesses(new DefaultTableModel(
+							new Object[][] {},
+							new String[] {"PID", "Usu\u00E1rio", "Comando", "Linha"})
+					);
+				}
+			}
+		});
+		textField.setBounds(461, 34, 192, 20);
 		frame.getContentPane().add(textField);
 		textField.setColumns(10);
 		
 		JLabel lblNewLabel = new JLabel("Filtrar processo");
-		lblNewLabel.setBounds(351, 15, 86, 14);
+		lblNewLabel.setBounds(299, 15, 100, 14);
 		frame.getContentPane().add(lblNewLabel);
 	}
+	
+	private static boolean isLong(String str) {
+        return str != null && str.matches("[0-9]*");
+    }
 	
 	public void getProcesses(DefaultTableModel dfltTableModel) {
 		ProcessHandle.allProcesses().forEach(proc -> {
 			if (proc != null && proc.info().user().isPresent()) {
 				dfltTableModel.addRow(new Object[] {proc.pid(), proc.info().user().orElse(""), proc.info().commandLine().orElse(""), proc.info().command().orElse("")});
 			}
-
-			System.out.println("PID: " + proc.pid() + " User: " + proc.info().user().orElse("") 
-					+ " Comando: " + proc.info().commandLine().orElse("") + " Linha:" + proc.info().command().orElse(""));
 		});
 		
 		table.setModel(dfltTableModel);
