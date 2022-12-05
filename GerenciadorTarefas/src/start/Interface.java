@@ -1,5 +1,5 @@
 package start;
-//Fernando Butzke
+// Fernando Butzke, Gustavo Kistner, Jennyfer Araujo
 
 import java.awt.EventQueue;
 
@@ -45,16 +45,10 @@ public class Interface {
 		});
 	}
 
-	/**
-	 * Create the application.
-	 */
 	public Interface() {
 		initialize();
 	}
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
 	private void initialize() {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 968, 604);
@@ -103,8 +97,6 @@ public class Interface {
 		JButton btnPanelFinalizarTarefa = new JButton("Finalizar tarefa");
 		btnPanelFinalizarTarefa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {	
-				System.out.println(dfltTableModel.getValueAt(table.getSelectedRow(), 0)); 
-				
 				ProcessHandle.allProcesses().forEach(proc -> {
 					if (dfltTableModel.getValueAt(table.getSelectedRow(), 0).equals(proc.pid())) {
 						proc.destroy();
